@@ -1,0 +1,246 @@
+<head>
+  <title>MHoC Data Viewer</title>
+  <!-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css"> -->
+</head>
+
+<body>
+
+</body>
+
+<template name="main">
+  <div class="container">
+    {{> navigation}} {{> yield}}
+
+    <footer class="footer">
+      <span class="label label-success">v0.2b</span>
+      <span class="label label-primary">LP</span>
+    </footer>
+
+  </div>
+</template>
+
+<template name="navigation">
+  <ul class="nav nav-pills">
+    <li class="{{isActiveRoute 'home'}}"><a href="{{pathFor route='home'}}">House of Commons</a></li>
+    <li class="{{isActiveRoute 'division'}}"><a href="{{pathFor route='division'}}">Division Lobby</a></li>
+    <li class="{{isActiveRoute 'mprecords'}}"><a href="{{pathFor route='mprecords'}}">MP Records</a></li>
+    <li class="{{isActiveRoute 'about'}}"><a href="{{pathFor route='about'}}">About</a></li>
+    {{> loginButtons}}
+  </ul>
+</template>
+
+<template name="home">
+  <div class="container">
+    <div class="panel panel-primary">
+      <div class="panel-heading">
+        <h3 class="panel-title">House of Commons</h3>
+      </div>
+      <div class="panel-body">
+        <h3>Work in progress.</h3>
+        {{> reactiveTable collection=tableMembers settings=tableMembersSettings class="table table-bordered table-hover"}}
+
+        {{> addMP}}
+
+        {{#if showMember}} {{> updateMP}} {{/if}}
+      </div>
+    </div>
+  </div>
+</template>
+
+<template name="addMP">
+  {{#if currentUser}}
+  <div class="col-md-8">
+    <div class="panel panel-primary">
+      <div class="panel-heading">
+        <h3 class="panel-title">Add MP</h3>
+      </div>
+      <div class="panel-body">
+
+        <form class="addMP">
+          <input type="text" name="name" placeholder="Name" autofocus>
+          <input type="text" name="party" placeholder="Party">
+          <input type="submit" value="Submit">
+        </form>
+      </div>
+    </div>
+  </div>
+  {{/if}}
+</template>
+
+<template name="updateMP">
+  {{#if currentUser}}
+  <div class="col-md-8">
+    <div class="panel panel-primary">
+      <div class="panel-heading">
+        <h3 class="panel-title">Update MP</h3>
+      </div>
+      <div class="panel-body">
+        <form class="updateMP">
+          <label>Name:</label> <input class="form-control" type="text" name="name" value="{{name}}"><br />
+          <label>Party:</label> <input class="form-control" type="text" name="party" value="{{party}}"><br />
+          <input class="btn btn-primary" type="submit" value="Submit">
+        </form>
+      </div>
+    </div>
+  </div>
+  {{/if}}
+</template>
+
+<template name="division">
+  {{> polls}} {{#if showAnomaly}} {{> anomaly}} {{/if}} {{#if showPoll}} {{> poll}} {{/if}}
+</template>
+
+<template name="mprecords">
+  <div class="container">
+    <div class="panel panel-primary">
+      <div class="panel-heading">
+        <h3 class="panel-title">MP Records</h3>
+      </div>
+      <div class="panel-body">
+        <h3>Soon…</h3>
+      </div>
+    </div>
+  </div>
+</template>
+
+<template name="about">
+  <div class="container">
+    <div class="panel panel-primary">
+      <div class="panel-heading">
+        <h3 class="panel-title">About</h3>
+      </div>
+      <div class="panel-body">
+        <h3>Soon…</h3>
+      </div>
+    </div>
+  </div>
+</template>
+
+<template name="polls">
+  <div class="container">
+    <div class="panel panel-primary">
+      <div class="panel-heading">
+        <h3 class="panel-title">Division Lobby</h3>
+      </div>
+      <div class="panel-body">
+        {{> reactiveTable collection=table settings=tableSettings class="table table-bordered table-hover"}}
+      </div>
+    </div>
+  </div>
+</template>
+
+<template name="anomaly">
+  <div class="container">
+    <div class="alert alert-warning" role="alert">
+      <strong>Warning, anomaly detected!</strong>
+      The number of users and votes per option do not match. The poll has probably been adjusted manually.
+    </div>
+  </div>
+</template>
+
+<template name="ayetemp">
+  <span class="label label-{{category}}">{{this}}</span>
+</template>
+
+<template name="poll">
+  <div class="container">
+    <div class="panel panel-{{passed}}">
+      <div class="panel-heading">
+        <h3 class="panel-title">
+          <strong>{{code}}</strong> – {{name}}
+          <span class="pull-right">
+            <em>{{formatDate closed}}</em>
+          </span>
+        </h3>
+      </div>
+      <div class="panel-body">
+        <div class="progress">
+          <div class="progress-bar progress-bar-success" style="width: {{ayeN}}%">
+            <span class="bar-text">{{ayeN}}%</span>
+          </div>
+          <div class="progress-bar progress-bar-warning" style="width: {{abstainN}}%">
+            <span>{{abstainN}}%</span>
+          </div>
+          <div class="progress-bar progress-bar-danger" style="width: {{noN}}%">
+            <span>{{noN}}%</span>
+          </div>
+        </div>
+
+        <div class="container-fluid center">
+          <div class="col-md-4 voters">
+            <div class="panel panel-success">
+              <div class="panel-heading">
+                <strong>Aye</strong>
+              </div>
+              <div class="panel-body">
+                {{#each aye}}
+                  {{> ayetemp}}
+                {{/each}}
+                <!-- {{#each aye}}
+                <span class="label label-success">{{this}}</span>
+                {{/each}} -->
+              </div>
+              <div class="panel-footer">
+                <small>{{ayeFoot}}</small>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-4 voters">
+            <div class="panel panel-warning">
+              <div class="panel-heading">
+                <strong>Abstain</strong>
+              </div>
+              <div class="panel-body">
+                {{#each abstain}}
+                 {{> ayetemp}}
+                {{/each}}
+              </div>
+              <div class="panel-footer">
+                <small>{{abstainFoot}}</small>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-4 voters">
+            <div class="panel panel-danger">
+              <div class="panel-heading">
+                <strong>No</strong>
+              </div>
+              <div class="panel-body">
+                {{#each no}}
+                 {{> ayetemp}}
+                {{/each}}
+              </div>
+              <div class="panel-footer">
+                <small>{{noFoot}}</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel-footer {{passed}}-foot">
+        Colour codes:
+        <span class="label label-Conservative">Conservative</span>
+        <span class="label label-Green">Green</span>
+        <span class="label label-Labour">Labour</span>
+        <span class="label label-Liberal">Liberal</span>
+        <span class="label label-Socialist">Socialist</span>
+        <span class="label label-UKIP">UKIP</span>
+        <span class="label label-nonmp">Non-MP</span>
+        <span class="pull-right">{{closed}}</span>
+      </div>
+
+    </div>
+  </div>
+</template>
+
+<!-- <template name="_loginButtonsLoggedOutDropdown">
+	<li id="login-dropdown-list" class="dropdown">
+		<a class="dropdown-toggle" data-toggle="dropdown">{{i18n 'loginButtonsLoggedOutDropdown.signIn'}}{{#unless forbidClientAccountCreation}} {{i18n 'loginButtonsLoggedOutDropdown.up'}}{{/unless}} <b class="caret"></b></a>
+		<div class="dropdown-menu">
+			{{> _loginButtonsLoggedOutAllServices}}
+		</div>
+	</li>
+</template> -->
